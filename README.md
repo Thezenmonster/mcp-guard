@@ -4,8 +4,8 @@ Security middleware for MCP servers. Trust-based access control, rate limiting, 
 
 **Zero dependencies. Works with any Node.js HTTP framework. Pluggable trust providers.**
 
-[![npm](https://img.shields.io/npm/v/mcp-guard)](https://www.npmjs.com/package/mcp-guard)
-[![license](https://img.shields.io/npm/l/mcp-guard)](https://github.com/Thezenmonster/mcp-guard/blob/main/LICENSE)
+[![npm](https://img.shields.io/npm/v/mcp-trust-guard)](https://www.npmjs.com/package/mcp-trust-guard)
+[![license](https://img.shields.io/npm/l/mcp-trust-guard)](https://github.com/Thezenmonster/mcp-guard/blob/main/LICENSE)
 
 ---
 
@@ -18,14 +18,14 @@ MCP servers have no security layer. Any client can call any tool — there's no 
 ## Install
 
 ```bash
-npm install mcp-guard
+npm install mcp-trust-guard
 ```
 
 ## Quick Start
 
 ```typescript
 import express from 'express';
-import { McpGuard } from 'mcp-guard';
+import { McpGuard } from 'mcp-trust-guard';
 
 const guard = new McpGuard({
   rules: [
@@ -139,7 +139,7 @@ const decision = await guard.check('EmberFoundry', 'transfer_funds');
 Use any trust source — not just AgentScore:
 
 ```typescript
-import { McpGuard, TrustProvider, TrustResult } from 'mcp-guard';
+import { McpGuard, TrustProvider, TrustResult } from 'mcp-trust-guard';
 
 const myProvider: TrustProvider = {
   async check(name: string): Promise<TrustResult> {

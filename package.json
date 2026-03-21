@@ -1,5 +1,5 @@
 {
-  "name": "mcp-guard",
+  "name": "mcp-trust-guard",
   "version": "0.1.0",
   "description": "Security middleware for MCP servers. Trust-based access control, rate limiting, and audit logging. Zero dependencies.",
   "type": "module",
