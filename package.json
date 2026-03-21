@@ -1,0 +1,54 @@
+{
+  "name": "mcp-guard",
+  "version": "0.1.0",
+  "description": "Security middleware for MCP servers. Trust-based access control, rate limiting, and audit logging. Zero dependencies.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "mcp-server",
+    "mcp-security",
+    "model-context-protocol",
+    "ai-agents",
+    "trust",
+    "access-control",
+    "rate-limiting",
+    "middleware",
+    "agent-security",
+    "agentscore"
+  ],
+  "author": "AgentScore <hello@agentscores.xyz>",
+  "license": "MIT",
+  "homepage": "https://github.com/Thezenmonster/mcp-guard",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Thezenmonster/mcp-guard.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Thezenmonster/mcp-guard/issues"
+  },
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/node": "^20.0.0"
+  }
+}
