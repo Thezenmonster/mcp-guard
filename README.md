@@ -1,8 +1,8 @@
 # mcp-guard
 
-Security middleware for MCP servers. Trust-based access control, rate limiting, and audit logging.
+**KYA (Know Your Agent)** security middleware for MCP servers. Abuse database, trust-based access control, rate limiting, and audit logging.
 
-**Zero dependencies. Works with any Node.js HTTP framework. Pluggable trust providers.**
+**Zero dependencies. Works with any Node.js HTTP framework. Part of the [KYA verification system](https://agentscores.xyz).**
 
 [![npm](https://img.shields.io/npm/v/mcp-trust-guard)](https://www.npmjs.com/package/mcp-trust-guard)
 [![license](https://img.shields.io/npm/l/mcp-trust-guard)](https://github.com/Thezenmonster/mcp-guard/blob/main/LICENSE)
@@ -13,7 +13,7 @@ Security middleware for MCP servers. Trust-based access control, rate limiting, 
 
 MCP servers have no security layer. Any client can call any tool — there's no identity verification, no access control, no rate limiting, no audit trail. As AI agents begin calling MCP tools autonomously, this is a critical gap.
 
-`mcp-guard` adds trust-based security to any MCP HTTP server in three lines of code.
+`mcp-guard` adds KYA verification to any MCP HTTP server — abuse database checks, trust-based access control, and audit logging in three lines of code.
 
 ## Install
 
