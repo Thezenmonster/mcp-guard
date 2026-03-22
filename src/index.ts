@@ -4,12 +4,13 @@ import type {
   GuardDecision,
   GuardRule,
   AuditEntry,
+  AbuseCheckResult,
   TrustProvider,
   TrustResult,
   RateLimitConfig,
 } from './types.js';
 
-export type { GuardConfig, GuardDecision, GuardRule, AuditEntry, TrustProvider, TrustResult, RateLimitConfig };
+export type { GuardConfig, GuardDecision, GuardRule, AuditEntry, AbuseCheckResult, TrustProvider, TrustResult, RateLimitConfig };
 export { AgentScoreProvider } from './trust.js';
 export { TrustCache } from './trust.js';
 
@@ -63,6 +64,10 @@ export class McpGuard {
   private rateLimiter: RateLimiter | null;
   private auditFn: ((entry: AuditEntry) => void) | null;
   private allowAnonymous: boolean;
+  private abuseCheck: boolean;
+  private abuseApiUrl: string;
+  private abuseBlockLevel: string;
+  private abuseCache = new Map<string, { result: AbuseCheckResult; expires: number }>();
 
   constructor(config: GuardConfig = {}) {
     this.provider = config.provider ?? new AgentScoreProvider(config.apiUrl, config.cacheTtl);
@@ -71,6 +76,9 @@ export class McpGuard {
     this.identityHeader = (config.identityHeader ?? 'x-agent-name').toLowerCase();
     this.allowAnonymous = config.allowAnonymous ?? false;
     this.rateLimiter = config.rateLimit ? new RateLimiter(config.rateLimit) : null;
+    this.abuseCheck = config.abuseCheck ?? false;
+    this.abuseApiUrl = config.abuseApiUrl ?? 'https://agentscores.xyz/api/abuse/check';
+    this.abuseBlockLevel = config.abuseBlockLevel ?? 'BLOCK';
 
     if (config.audit === true) {
       this.auditFn = (entry) => {
@@ -82,6 +90,42 @@ export class McpGuard {
     } else {
       this.auditFn = null;
     }
+  }
+
+  /**
+   * Check if a caller has been reported in the KYA abuse database.
+   */
+  async checkAbuse(caller: string): Promise<AbuseCheckResult> {
+    // Check cache first
+    const cached = this.abuseCache.get(caller);
+    if (cached && Date.now() < cached.expires) return cached.result;
+
+    try {
+      const res = await fetch(`${this.abuseApiUrl}?agent=${encodeURIComponent(caller)}`);
+      if (!res.ok) {
+        return { reported: false, report_count: 0, severity: 'none', recommendation: 'CLEAN', reasons: [] };
+      }
+      const data = await res.json() as any;
+      const result: AbuseCheckResult = {
+        reported: data.report_count > 0,
+        report_count: data.report_count ?? 0,
+        severity: data.severity ?? 'none',
+        recommendation: data.recommendation ?? 'CLEAN',
+        reasons: data.reasons ?? [],
+      };
+      this.abuseCache.set(caller, { result, expires: Date.now() + 300_000 }); // 5 min cache
+      return result;
+    } catch {
+      // Abuse check failure is non-fatal — allow through
+      return { reported: false, report_count: 0, severity: 'none', recommendation: 'CLEAN', reasons: [] };
+    }
+  }
+
+  private shouldBlockForAbuse(recommendation: string): boolean {
+    const levels = ['MONITOR', 'CAUTION', 'BLOCK'];
+    const blockIdx = levels.indexOf(this.abuseBlockLevel);
+    const recIdx = levels.indexOf(recommendation);
+    return recIdx >= 0 && blockIdx >= 0 && recIdx >= blockIdx;
   }
 
   /**
@@ -132,6 +176,17 @@ export class McpGuard {
         const entry = this.buildEntry(caller, body.method, tool, -1, 'RATE_LIMITED', false, 'rate limit exceeded');
         this.audit(entry);
         return this.deny(res, body.id, entry.reason, 429);
+      }
+
+      // Abuse database check
+      if (this.abuseCheck) {
+        const abuse = await this.checkAbuse(caller);
+        if (abuse.reported && this.shouldBlockForAbuse(abuse.recommendation)) {
+          const reason = `agent reported in KYA abuse database: ${abuse.reasons.join(', ')} (${abuse.report_count} reports, severity: ${abuse.severity})`;
+          const entry = this.buildEntry(caller, body.method, tool, -1, 'ABUSE_REPORTED', false, reason);
+          this.audit(entry);
+          return this.deny(res, body.id, reason);
+        }
       }
 
       // Trust check

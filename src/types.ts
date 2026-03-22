@@ -33,6 +33,14 @@ export interface AuditEntry {
   reason: string;
 }
 
+export interface AbuseCheckResult {
+  reported: boolean;
+  report_count: number;
+  severity: string;
+  recommendation: string;
+  reasons: string[];
+}
+
 export interface GuardConfig {
   /** Custom trust provider — omit to use AgentScore (default) */
   provider?: TrustProvider;
@@ -52,6 +60,12 @@ export interface GuardConfig {
   audit?: boolean | ((entry: AuditEntry) => void);
   /** Allow requests with no caller identity (default: false) */
   allowAnonymous?: boolean;
+  /** Check KYA abuse database before allowing access (default: false) */
+  abuseCheck?: boolean;
+  /** KYA abuse API URL (default: https://agentscores.xyz/api/abuse/check) */
+  abuseApiUrl?: string;
+  /** Block agents with this recommendation or worse: MONITOR | CAUTION | BLOCK (default: BLOCK) */
+  abuseBlockLevel?: 'MONITOR' | 'CAUTION' | 'BLOCK';
 }
 
 export interface GuardDecision {
