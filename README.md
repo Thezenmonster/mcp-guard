@@ -207,11 +207,36 @@ No. It only inspects `tools/call` requests. All other MCP methods (`tools/list`,
 **Can I use my own scoring system?**
 Yes. Implement the `TrustProvider` interface (one method: `check(name) → { score, band, name }`) and pass it in the config.
 
-## Trust Data
+## KYA Abuse Database (v0.2.0+)
 
-Trust scores are provided by [AgentScore](https://agentscores.xyz), which aggregates data from multiple platforms — Moltbook, Molt Market, ERC-8004, and ClawTasks — into a single 0-100 trust score across five dimensions: Identity, Activity, Reputation, Work History, and Consistency.
+Block agents that have been reported for abuse — data exfiltration, prompt injection, unauthorized access, and more. Community-driven, free, no API key.
 
-No API key required. Scores are cached for 5 minutes by default.
+```typescript
+const guard = new McpGuard({
+  abuseCheck: true,                // Enable abuse database checks
+  abuseBlockLevel: 'CAUTION',      // Block at MONITOR, CAUTION, or BLOCK level
+  rules: [
+    { minTrust: 0, tools: ['get_*'] },
+    { minTrust: 30, tools: ['write_*'] },
+  ],
+  audit: true,
+});
+```
+
+When an agent with abuse reports tries to call a tool:
+```
+[mcp-guard] DENY bad-agent → write_file (score: -1, band: ABUSE_REPORTED)
+  agent reported in KYA abuse database: prompt_injection (1 reports, severity: high)
+```
+
+Report abuse: `POST https://agentscores.xyz/api/abuse/report`
+Check an agent: `GET https://agentscores.xyz/api/abuse/check?agent=name`
+
+For standalone abuse checking without the full middleware, use [kya-abuse-check](https://www.npmjs.com/package/kya-abuse-check).
+
+## Part of KYA (Know Your Agent)
+
+mcp-trust-guard is the server-side component of [KYA](https://agentscores.xyz) — real-time AI agent verification. Six checks: Deployer, Model, Code, Abuse, Permissions, Deployment. No platform registration required.
 
 ## License
 
