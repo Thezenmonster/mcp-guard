@@ -6,6 +6,7 @@
 
 [![npm](https://img.shields.io/npm/v/mcp-trust-guard)](https://www.npmjs.com/package/mcp-trust-guard)
 [![license](https://img.shields.io/npm/l/mcp-trust-guard)](https://github.com/Thezenmonster/mcp-guard/blob/main/LICENSE)
+[![KYA Scan](https://agentscores.xyz/api/scan/badge?npm=mcp-trust-guard)](https://agentscores.xyz/scan?npm=mcp-trust-guard)
 
 > **Scan any MCP package for security issues:** [agentscores.xyz](https://agentscores.xyz) - type a package name, get instant results.
 
